@@ -1,5 +1,5 @@
 -- ============================================================
--- XuiloUI – библиотека для создания UI (полная версия)
+-- XuiloUI – библиотека для создания UI с интро-анимацией
 -- ============================================================
 
 local XuiloUI = {}
@@ -34,206 +34,8 @@ local TooltipStroke = nil
 local windows = {}
 
 -- ============================================================
--- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+-- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ (тень, перетаскивание, наклон, тултипы)
 -- ============================================================
-function Window.new(config)
-	config = config or {}
-	local self = setmetatable({}, Window)
-	self.Title = config.Title or "XuiloUI"
-	self.Size = config.Size or UDim2.fromOffset(360, 300)
-	self.Position = config.Position or UDim2.new(0.5, -180, 0.5, -150)
-	self.Theme = config.Theme or Theme
-	self.DefaultOpen = (config.DefaultOpen ~= false)
-	self.ShowToggleButton = (config.ShowToggleButton ~= false)
-	self.LoadingEnabled = (config.LoadingEnabled ~= false)
-	self.Tabs = {}
-	self.ActiveTabIndex = nil
-	self.IsOpen = self.DefaultOpen
-	self.Animating = false
-
-	-- Параметры интро
-	local introEnabled = config.IntroEnabled
-	if introEnabled == nil then introEnabled = (config.IntroImage ~= nil) end
-	local introImage = config.IntroImage
-	local introDuration = config.IntroDuration or 2
-	local introSize = config.IntroSize or UDim2.fromOffset(120, 120)
-
-	-- Будет ли показан загрузочный экран (спиннер или интро)
-	local hasLoading = self.LoadingEnabled or introEnabled
-
-	if not ScreenGui then
-		ScreenGui = Instance.new("ScreenGui")
-		ScreenGui.Name = "XuiloUI"
-		ScreenGui.ResetOnSpawn = false
-		ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
-	end
-	initTooltip()
-
-	-- Основное окно (изначально маленькое, если есть загрузка)
-	local MainFrame = Instance.new("Frame", ScreenGui)
-	MainFrame.Size = hasLoading and UDim2.fromOffset(96, 96) or self.Size
-	MainFrame.Position = hasLoading and UDim2.new(0.5, -48, 0.5, -48) or self.Position
-	MainFrame.BackgroundColor3 = self.Theme.Panel
-	MainFrame.ClipsDescendants = true
-	MainFrame.Visible = true  -- всегда видимо, даже если загрузка
-	Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 22)
-	local MainStroke = Instance.new("UIStroke", MainFrame)
-	MainStroke.Thickness = 1
-	MainStroke.Color = self.Theme.Stroke
-	MainStroke.Transparency = 0.35
-	addSoftShadow(MainFrame, 22, 14)
-	self.MainFrame = MainFrame
-
-	-- Группа загрузки (общий контейнер для интро или спиннера)
-	local LoadingGroup = Instance.new("CanvasGroup", MainFrame)
-	LoadingGroup.Size = UDim2.new(1, 0, 1, 0)
-	LoadingGroup.BackgroundTransparency = 1
-	LoadingGroup.GroupTransparency = 0
-	self.LoadingGroup = LoadingGroup
-
-	-- Создаём элементы загрузки
-	local introLabel = nil
-	local spinnerTween = nil
-
-	if introEnabled and introImage then
-		-- ИНТРО (изображение)
-		introLabel = Instance.new("ImageLabel", LoadingGroup)
-		introLabel.Size = introSize
-		introLabel.AnchorPoint = Vector2.new(0.5, 0.5)
-		introLabel.Position = UDim2.new(0.5, 0, 1.2, 0) -- старт снизу
-		introLabel.BackgroundTransparency = 1
-		introLabel.Image = introImage
-		introLabel.ImageTransparency = 0
-		introLabel.Visible = true
-		introLabel.ZIndex = 2
-		-- можно добавить тень, но не обязательно
-	elseif self.LoadingEnabled then
-		-- СПИННЕР (старый вариант)
-		local Spinner = Instance.new("Frame", LoadingGroup)
-		Spinner.Size = UDim2.new(0, 24, 0, 24)
-		Spinner.AnchorPoint = Vector2.new(0.5, 1)
-		Spinner.Position = UDim2.new(0.5, 0, 1, -14)
-		Spinner.BackgroundTransparency = 1
-
-		local SpinnerStroke = Instance.new("UIStroke", Spinner)
-		SpinnerStroke.Thickness = 3
-		SpinnerStroke.Color = self.Theme.Text
-		SpinnerStroke.Transparency = 0.1
-
-		local SpinnerGradient = Instance.new("UIGradient", Spinner)
-		SpinnerGradient.Transparency = NumberSequence.new({
-			NumberSequenceKeypoint.new(0, 0),
-			NumberSequenceKeypoint.new(0.25, 0.4),
-			NumberSequenceKeypoint.new(0.6, 0.9),
-			NumberSequenceKeypoint.new(1, 1),
-		})
-		Instance.new("UICorner", Spinner).CornerRadius = UDim.new(1, 0)
-
-		local LoadingLabel = Instance.new("TextLabel", LoadingGroup)
-		LoadingLabel.Size = UDim2.new(1, 0, 0, 16)
-		LoadingLabel.Position = UDim2.new(0, 0, 0.5, -20)
-		LoadingLabel.BackgroundTransparency = 1
-		LoadingLabel.Text = "xuilo.ui"
-		LoadingLabel.Font = Enum.Font.GothamBold
-		LoadingLabel.TextSize = 13
-		LoadingLabel.TextColor3 = self.Theme.Text
-
-		spinnerTween = TweenService:Create(Spinner, TweenInfo.new(1.6, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1), {Rotation = 360})
-		spinnerTween:Play()
-		self.Spinner = Spinner
-		self.SpinnerTween = spinnerTween
-	else
-		-- Если нет ни интро, ни спиннера – скрываем группу
-		LoadingGroup.GroupTransparency = 1
-		LoadingGroup.Visible = false
-	end
-
-	-- Меню (изначально скрыто)
-	local MenuGroup = Instance.new("CanvasGroup", MainFrame)
-	MenuGroup.Size = UDim2.new(1, 0, 1, 0)
-	MenuGroup.BackgroundTransparency = 1
-	MenuGroup.GroupTransparency = hasLoading and 1 or 0
-	MenuGroup.Visible = not hasLoading  -- если есть загрузка, скрыто
-	self.MenuGroup = MenuGroup
-
-	-- Хедер, сайдбар, контент – создаются как и раньше (код не меняется)
-	-- ... (оставляем старый код для Header, Sidebar, ContentArea и т.д.) ...
-
-	-- Вставляем сюда весь код создания Header, Sidebar, ContentArea, CloseBtn, OpenBtn и т.п.
-	-- (он идентичен предыдущей версии, я его не повторяю для краткости)
-
-	-- Далее – логика загрузки/интро
-	if hasLoading then
-		task.spawn(function()
-			if introEnabled and introImage then
-				-- === АНИМАЦИЯ ИНТРО ===
-				-- Вылетает снизу
-				local tweenIn = TweenService:Create(introLabel, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-					Position = UDim2.new(0.5, 0, 0.5, 0)
-				})
-				tweenIn:Play()
-				tweenIn.Completed:Wait()
-
-				-- Стоит в центре заданное время
-				task.wait(introDuration)
-
-				-- Улетает наверх и исчезает
-				local tweenOut = TweenService:Create(introLabel, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
-					Position = UDim2.new(0.5, 0, -0.5, 0),
-					ImageTransparency = 1
-				})
-				tweenOut:Play()
-				tweenOut.Completed:Wait()
-
-				-- Скрываем группу загрузки
-				LoadingGroup.Visible = false
-
-			elseif self.LoadingEnabled then
-				-- === СТАРЫЙ СПИННЕР ===
-				task.wait(1.1)  -- показываем спиннер 1.1 сек
-				local fadeOutTween = TweenService:Create(LoadingGroup, TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {GroupTransparency = 1})
-				fadeOutTween:Play()
-				fadeOutTween.Completed:Wait()
-				if self.SpinnerTween then self.SpinnerTween:Cancel() end
-				LoadingGroup.Visible = false
-			end
-
-			-- === РАСШИРЯЕМ ОКНО ДО РАЗМЕРА И ПОКАЗЫВАЕМ МЕНЮ ===
-			local expandTween = TweenService:Create(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-				Size = self.Size,
-				Position = self.Position,
-			})
-			expandTween:Play()
-			expandTween.Completed:Wait()
-
-			MenuGroup.Visible = true
-			TweenService:Create(MenuGroup, TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {GroupTransparency = 0}):Play()
-
-			self.IsOpen = true
-			if self.Tabs[1] then
-				self:SelectTab(1)
-			end
-		end)
-	else
-		-- Нет загрузки – сразу показываем меню
-		MenuGroup.Visible = true
-		MenuGroup.GroupTransparency = 0
-		self.IsOpen = self.DefaultOpen
-		if self.DefaultOpen and self.Tabs[1] then
-			self:SelectTab(1)
-		end
-	end
-
-	-- Обработчик закрытия через крестик
-	CloseBtn.MouseButton1Click:Connect(function()
-		self:Close()
-	end)
-
-	-- ... остальной код (создание кнопки OpenBtn и т.д.) такой же, как был ...
-
-	table.insert(windows, self)
-	return self
-end
 
 local function addSoftShadow(target, cornerRadius, maxExtraPixels)
 	maxExtraPixels = maxExtraPixels or 12
@@ -408,11 +210,26 @@ function Window.new(config)
 	self.Theme = config.Theme or Theme
 	self.DefaultOpen = (config.DefaultOpen ~= false)
 	self.ShowToggleButton = (config.ShowToggleButton ~= false)
-	self.LoadingEnabled = (config.LoadingEnabled ~= false)
 	self.Tabs = {}
 	self.ActiveTabIndex = nil
 	self.IsOpen = self.DefaultOpen
 	self.Animating = false
+
+	-- Параметры интро
+	local introEnabled = config.IntroEnabled
+	if introEnabled == nil then introEnabled = (config.IntroImage ~= nil) end
+	local introImage = config.IntroImage
+	local introDuration = config.IntroDuration or 2
+	local introSize = config.IntroSize or UDim2.fromOffset(120, 120)
+
+	-- Будет ли показан загрузочный экран (спиннер или интро)
+	local hasLoading = self.LoadingEnabled or introEnabled
+	-- загрузка по умолчанию включена, если не указано иначе
+	if config.LoadingEnabled == nil then
+		self.LoadingEnabled = (not introEnabled)  -- если есть интро, спиннер не нужен
+	else
+		self.LoadingEnabled = config.LoadingEnabled
+	end
 
 	if not ScreenGui then
 		ScreenGui = Instance.new("ScreenGui")
@@ -424,11 +241,11 @@ function Window.new(config)
 
 	-- Основное окно
 	local MainFrame = Instance.new("Frame", ScreenGui)
-	MainFrame.Size = self.LoadingEnabled and UDim2.fromOffset(96, 96) or self.Size
-	MainFrame.Position = self.LoadingEnabled and UDim2.new(0.5, -48, 0.5, -48) or self.Position
+	MainFrame.Size = hasLoading and UDim2.fromOffset(96, 96) or self.Size
+	MainFrame.Position = hasLoading and UDim2.new(0.5, -48, 0.5, -48) or self.Position
 	MainFrame.BackgroundColor3 = self.Theme.Panel
 	MainFrame.ClipsDescendants = true
-	MainFrame.Visible = self.DefaultOpen or not self.LoadingEnabled
+	MainFrame.Visible = true
 	Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 22)
 	local MainStroke = Instance.new("UIStroke", MainFrame)
 	MainStroke.Thickness = 1
@@ -437,14 +254,31 @@ function Window.new(config)
 	addSoftShadow(MainFrame, 22, 14)
 	self.MainFrame = MainFrame
 
-	-- Группа загрузки
+	-- Группа загрузки (общий контейнер для интро или спиннера)
 	local LoadingGroup = Instance.new("CanvasGroup", MainFrame)
 	LoadingGroup.Size = UDim2.new(1, 0, 1, 0)
 	LoadingGroup.BackgroundTransparency = 1
 	LoadingGroup.GroupTransparency = 0
 	self.LoadingGroup = LoadingGroup
 
-	if self.LoadingEnabled then
+	-- Создаём элементы загрузки
+	local introLabel = nil
+	local spinnerTween = nil
+
+	if introEnabled and introImage then
+		-- ИНТРО (изображение)
+		introLabel = Instance.new("ImageLabel", LoadingGroup)
+		introLabel.Size = introSize
+		introLabel.AnchorPoint = Vector2.new(0.5, 0.5)
+		introLabel.Position = UDim2.new(0.5, 0, 1.2, 0) -- старт снизу
+		introLabel.BackgroundTransparency = 1
+		introLabel.Image = introImage
+		introLabel.ImageTransparency = 0
+		introLabel.Visible = true
+		introLabel.ZIndex = 2
+		-- можно добавить тень, но не обязательно
+	elseif self.LoadingEnabled then
+		-- СПИННЕР (старый вариант)
 		local Spinner = Instance.new("Frame", LoadingGroup)
 		Spinner.Size = UDim2.new(0, 24, 0, 24)
 		Spinner.AnchorPoint = Vector2.new(0.5, 1)
@@ -474,21 +308,22 @@ function Window.new(config)
 		LoadingLabel.TextSize = 13
 		LoadingLabel.TextColor3 = self.Theme.Text
 
-		local spinnerTween = TweenService:Create(Spinner, TweenInfo.new(1.6, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1), {Rotation = 360})
+		spinnerTween = TweenService:Create(Spinner, TweenInfo.new(1.6, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1), {Rotation = 360})
 		spinnerTween:Play()
-		self.SpinnerTween = spinnerTween
 		self.Spinner = Spinner
+		self.SpinnerTween = spinnerTween
 	else
+		-- Нет ни интро, ни спиннера – скрываем группу
 		LoadingGroup.GroupTransparency = 1
 		LoadingGroup.Visible = false
 	end
 
-	-- Меню
+	-- Меню (изначально скрыто)
 	local MenuGroup = Instance.new("CanvasGroup", MainFrame)
 	MenuGroup.Size = UDim2.new(1, 0, 1, 0)
 	MenuGroup.BackgroundTransparency = 1
-	MenuGroup.GroupTransparency = self.LoadingEnabled and 1 or 0
-	MenuGroup.Visible = self.LoadingEnabled and false or true
+	MenuGroup.GroupTransparency = hasLoading and 1 or 0
+	MenuGroup.Visible = not hasLoading
 	self.MenuGroup = MenuGroup
 
 	-- Хедер
@@ -621,16 +456,39 @@ function Window.new(config)
 		self:Close()
 	end)
 
-	-- Анимация загрузки
-	if self.LoadingEnabled then
+	-- Логика загрузки/интро
+	if hasLoading then
 		task.spawn(function()
-			task.wait(1.1)
-			local fadeOutTween = TweenService:Create(LoadingGroup, TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {GroupTransparency = 1})
-			fadeOutTween:Play()
-			fadeOutTween.Completed:Wait()
-			if self.SpinnerTween then self.SpinnerTween:Cancel() end
-			LoadingGroup.Visible = false
+			if introEnabled and introImage then
+				-- === АНИМАЦИЯ ИНТРО ===
+				local tweenIn = TweenService:Create(introLabel, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+					Position = UDim2.new(0.5, 0, 0.5, 0)
+				})
+				tweenIn:Play()
+				tweenIn.Completed:Wait()
 
+				task.wait(introDuration)
+
+				local tweenOut = TweenService:Create(introLabel, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+					Position = UDim2.new(0.5, 0, -0.5, 0),
+					ImageTransparency = 1
+				})
+				tweenOut:Play()
+				tweenOut.Completed:Wait()
+
+				LoadingGroup.Visible = false
+
+			elseif self.LoadingEnabled then
+				-- === СТАРЫЙ СПИННЕР ===
+				task.wait(1.1)
+				local fadeOutTween = TweenService:Create(LoadingGroup, TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {GroupTransparency = 1})
+				fadeOutTween:Play()
+				fadeOutTween.Completed:Wait()
+				if self.SpinnerTween then self.SpinnerTween:Cancel() end
+				LoadingGroup.Visible = false
+			end
+
+			-- === РАСШИРЯЕМ ОКНО ДО РАЗМЕРА И ПОКАЗЫВАЕМ МЕНЮ ===
 			local expandTween = TweenService:Create(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
 				Size = self.Size,
 				Position = self.Position,
@@ -647,6 +505,7 @@ function Window.new(config)
 			end
 		end)
 	else
+		-- Нет загрузки – сразу показываем меню
 		MenuGroup.Visible = true
 		MenuGroup.GroupTransparency = 0
 		self.IsOpen = self.DefaultOpen
@@ -659,7 +518,9 @@ function Window.new(config)
 	return self
 end
 
--- Методы Window
+-- ============================================================
+-- МЕТОДЫ WINDOW
+-- ============================================================
 
 function Window:Open()
 	if self.IsOpen or self.Animating then return end
