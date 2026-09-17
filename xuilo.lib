@@ -1,3 +1,4 @@
+-- menu.lua — сам каркас меню (загружай на GitHub raw / Pastebin raw)
 local CoreGui          = game:GetService("CoreGui")
 local Players          = game:GetService("Players")
 local LocalPlayer      = Players.LocalPlayer
@@ -6,12 +7,10 @@ local TweenService     = game:GetService("TweenService")
 local RunService       = game:GetService("RunService")
 local ContextActionService = game:GetService("ContextActionService")
 
--- ==== КОНСТАНТЫ ====
-local PIXEL_FONT = Font.fromId(12187371840)
-local LOGO_IMAGE = "rbxassetid://130320469897950"
+local PIXEL_FONT    = Font.fromId(12187371840)
+local LOGO_IMAGE    = "rbxassetid://130320469897950"
 local PATTERN_IMAGE = "rbxassetid://6803353442"
 
--- ==== ТЕМЫ ====
 local Themes = {
     Dark = {
         Card=Color3.fromRGB(12,12,14), CardBorder=Color3.fromRGB(32,32,37), Topbar=Color3.fromRGB(12,12,14),
@@ -59,7 +58,6 @@ local function bind(inst, prop, key)
     inst[prop] = Theme[key]
 end
 
--- ==== РАЗМЕРЫ ====
 local CARD_W, CARD_H = 340, 280
 local TOPBAR_H       = 34
 local SIDEBAR_W      = 105
@@ -75,7 +73,7 @@ local function tween(inst, props, t)
     return TweenService:Create(inst, TweenInfo.new(t or 0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), props):Play()
 end
 
--- ==================== ROOT ====================
+-- ROOT
 local ScreenGui = new("ScreenGui", {
     Name = "XuiloUI", ResetOnSpawn = false, IgnoreGuiInset = true,
     ZIndexBehavior = Enum.ZIndexBehavior.Sibling, DisplayOrder = 100,
@@ -83,7 +81,6 @@ local ScreenGui = new("ScreenGui", {
 local ok = pcall(function() ScreenGui.Parent = CoreGui end)
 if not ok then ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
 
--- ==================== CANVASGROUP ====================
 local CanvasGroup = Instance.new("CanvasGroup")
 CanvasGroup.Name = "CanvasGroup"
 CanvasGroup.Size = UDim2.fromOffset(CARD_W, CARD_H)
@@ -103,7 +100,6 @@ Constraint.MinSize = Vector2.new(200, TOPBAR_H)
 Constraint.MaxSize = Vector2.new(1200, 800)
 Constraint.Parent = CanvasGroup
 
--- ==================== SECTIONS ====================
 local Sections = new("Folder", { Name = "Sections", Parent = CanvasGroup })
 
 local Topbar = new("Frame", {
@@ -120,14 +116,11 @@ local Shadow = new("Frame", {
 bind(Shadow, "BackgroundColor3", "CardBorder")
 
 new("ImageLabel", {
-    Name = "Logo",
-    Size = UDim2.fromOffset(18, 18),
+    Name = "Logo", Size = UDim2.fromOffset(18, 18),
     Position = UDim2.new(0, 12, 0.5, 0),
     AnchorPoint = Vector2.new(0, 0.5),
-    BackgroundTransparency = 1,
-    Image = LOGO_IMAGE,
-    ScaleType = Enum.ScaleType.Fit,
-    ZIndex = 10, Parent = Topbar,
+    BackgroundTransparency = 1, Image = LOGO_IMAGE,
+    ScaleType = Enum.ScaleType.Fit, ZIndex = 10, Parent = Topbar,
 })
 
 local Buttons = new("Frame", {
@@ -206,7 +199,6 @@ new("UIGradient", {
     Rotation = 90, Parent = Pattern,
 })
 
--- ==================== BODY ====================
 local Body = new("Frame", {
     Name = "Body", Size = UDim2.new(1, 0, 1, -TOPBAR_H),
     Position = UDim2.fromOffset(0, TOPBAR_H),
@@ -247,7 +239,7 @@ local Content = new("Frame", {
     Position = UDim2.fromOffset(4, 4), BackgroundTransparency = 1, Parent = ContentPanel,
 })
 
--- ==================== PAGE SYSTEM ====================
+-- PAGE SYSTEM
 local Pages = {}
 local PageButtons = {}
 local currentPage = nil
@@ -320,7 +312,7 @@ local function pageButton(name, label, order)
     return btn
 end
 
--- ==================== WIDGET: TOGGLE ====================
+-- WIDGET: TOGGLE
 local toggleApplies = {}
 local toggleResets  = {}
 
@@ -394,7 +386,7 @@ local function makeToggle(parent, label, default, order, callback)
     }
 end
 
--- ==================== WIDGET: COLOR PICKER ====================
+-- WIDGET: COLOR PICKER
 local function HSVtoRGB(h, s, v)
     local r, g, b
     local i = math.floor(h * 6)
@@ -612,20 +604,16 @@ local function makeColorPicker(parent, label, defaultColor, order, callback)
     }
 end
 
--- ==================== THEME / RESET ====================
+-- THEME
 local function applyAllTheme()
     for _, e in ipairs(themedBindings) do e.inst[e.prop] = Theme[e.key] end
     Pattern.ImageTransparency = Theme.PatternTransparency
     for _, fn in ipairs(toggleApplies) do fn() end
     if currentPage then selectPage(currentPage, true) end
 end
+local function switchTheme(name) setTheme(name); applyAllTheme() end
 
-local function switchTheme(name)
-    setTheme(name)
-    applyAllTheme()
-end
-
--- ==================== COLLAPSE / ПОЯВЛЕНИЕ ====================
+-- COLLAPSE
 local collapsed = false
 local closing, uiOpen = false, false
 
@@ -670,7 +658,7 @@ end, false, Enum.KeyCode.RightShift)
 CloseBtn.MouseButton1Click:Connect(hideUI)
 CollapseBtn.MouseButton1Click:Connect(function() setCollapsed(not collapsed) end)
 
--- ==================== НАКЛОН + ПЛАВНЫЙ ДРАГ ====================
+-- TILT + DRAG
 local MAX_TILT = 2.5
 local currentTilt = 0
 local dragging = false
@@ -730,33 +718,185 @@ UserInputService.InputEnded:Connect(function(input)
 end)
 
 -- ============================================================
--- ============  ЗДЕСЬ ПИШЕШЬ СВОЙ ЧИТ  =======================
+-- ============  ПРИМЕР ЧИТА  =================================
 -- ============================================================
--- Доступные функции:
---   pageButton(name, label, order)         -> создаёт кнопку страницы в сайдбаре
---   newPage(name)                          -> создаёт страницу (ScrollingFrame)
---   makeToggle(parent, label, default, order, callback)  -> тумблер
---   makeColorPicker(parent, label, defaultColor, order, callback) -> колор-пикер
---   switchTheme("Dark" | "Light")          -> смена темы
---   toggleUI()                             -> показать/скрыть меню
---
--- Пример использования:
---
---   pageButton("Combat", "Combat", 1)
---   local combat = newPage("Combat")
---   makeToggle(combat, "Aimbot", false, 1, function(on) print("Aimbot:", on) end)
---   makeColorPicker(combat, "ESP Color", Color3.fromRGB(255,0,0), 2, function(c) print(c) end)
---   selectPage("Combat", true)
---
--- ============================================================
+local Cheat = {
+    Aimbot=false, SilentAim=false, AimbotFOVColor=Color3.fromRGB(120,220,140),
+    ESP=false, ESPColor=Color3.fromRGB(255,80,80),
+    Chams=false, Fullbright=false, NoFog=false,
+    Speed=false, JumpPower=false, Fly=false, Noclip=false,
+    AntiAFK=false, InfiniteJump=false, AutoCollect=false,
+}
 
-return {
-    ScreenGui = ScreenGui,
-    Toggle = toggleUI,
-    setTheme = switchTheme,
-    newPage = newPage,
-    pageButton = pageButton,
-    selectPage = selectPage,
-    makeToggle = makeToggle,
-    makeColorPicker = makeColorPicker,
+-- COMBAT
+pageButton("Combat", "Combat", 1)
+local combatPage = newPage("Combat")
+
+makeToggle(combatPage, "Aimbot", false, 1, function(on)
+    Cheat.Aimbot = on
+    print("[Cheat] Aimbot:", on)
+end)
+
+makeToggle(combatPage, "Silent Aim", false, 2, function(on)
+    Cheat.SilentAim = on
+    print("[Cheat] Silent Aim:", on)
+end)
+
+makeColorPicker(combatPage, "Aimbot FOV Color", Color3.fromRGB(120, 220, 140), 3, function(c)
+    Cheat.AimbotFOVColor = c
+    print("[Cheat] FOV Color:", c)
+end)
+
+-- VISUALS
+pageButton("Visuals", "Visuals", 2)
+local visualPage = newPage("Visuals")
+
+makeToggle(visualPage, "Player ESP", false, 1, function(on)
+    Cheat.ESP = on
+    print("[Cheat] ESP:", on)
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer and plr.Character then
+            local hl = plr.Character:FindFirstChild("CheatHighlight")
+            if on then
+                if not hl then
+                    hl = Instance.new("Highlight")
+                    hl.Name = "CheatHighlight"
+                    hl.FillColor = Cheat.ESPColor
+                    hl.OutlineColor = Color3.new(1,1,1)
+                    hl.Parent = plr.Character
+                end
+            else
+                if hl then hl:Destroy() end
+            end
+        end
+    end
+end)
+
+makeColorPicker(visualPage, "ESP Color", Color3.fromRGB(255, 80, 80), 2, function(c)
+    Cheat.ESPColor = c
+    print("[Cheat] ESP Color:", c)
+    for _, plr in ipairs(Players:GetPlayers()) do
+        local hl = plr.Character and plr.Character:FindFirstChild("CheatHighlight")
+        if hl then hl.FillColor = c end
+    end
+end)
+
+makeToggle(visualPage, "Chams", false, 3, function(on)
+    Cheat.Chams = on
+    print("[Cheat] Chams:", on)
+end)
+
+makeToggle(visualPage, "Fullbright", false, 4, function(on)
+    Cheat.Fullbright = on
+    print("[Cheat] Fullbright:", on)
+    local lighting = game:GetService("Lighting")
+    if on then
+        lighting.Brightness = 5
+        lighting.ClockTime = 12
+        lighting.FogEnd = 100000
+    else
+        lighting.Brightness = 2
+        lighting.ClockTime = 14
+    end
+end)
+
+makeToggle(visualPage, "No Fog", false, 5, function(on)
+    Cheat.NoFog = on
+    print("[Cheat] No Fog:", on)
+    game:GetService("Lighting").FogEnd = on and 100000 or 1000
+end)
+
+-- MOVEMENT
+pageButton("Movement", "Movement", 3)
+local movePage = newPage("Movement")
+
+makeToggle(movePage, "Speed Hack", false, 1, function(on)
+    Cheat.Speed = on
+    print("[Cheat] Speed:", on)
+    local char = LocalPlayer.Character
+    local hum = char and char:FindFirstChildOfClass("Humanoid")
+    if hum then hum.WalkSpeed = on and 50 or 16 end
+end)
+
+makeToggle(movePage, "Jump Power", false, 2, function(on)
+    Cheat.JumpPower = on
+    print("[Cheat] Jump Power:", on)
+    local char = LocalPlayer.Character
+    local hum = char and char:FindFirstChildOfClass("Humanoid")
+    if hum then
+        hum.UseJumpPower = true
+        hum.JumpPower = on and 100 or 50
+    end
+end)
+
+makeToggle(movePage, "Fly", false, 3, function(on)
+    Cheat.Fly = on
+    print("[Cheat] Fly:", on)
+end)
+
+makeToggle(movePage, "Noclip", false, 4, function(on)
+    Cheat.Noclip = on
+    print("[Cheat] Noclip:", on)
+    if on then
+        task.spawn(function()
+            while Cheat.Noclip do
+                local char = LocalPlayer.Character
+                if char then
+                    for _, p in ipairs(char:GetDescendants()) do
+                        if p:IsA("BasePart") and p.CanCollide then p.CanCollide = false end
+                    end
+                end
+                task.wait(0.1)
+            end
+        end)
+    end
+end)
+
+-- MISC
+pageButton("Misc", "Misc", 4)
+local miscPage = newPage("Misc")
+
+makeToggle(miscPage, "Anti-AFK", false, 1, function(on)
+    Cheat.AntiAFK = on
+    print("[Cheat] Anti-AFK:", on)
+    if on then
+        task.spawn(function()
+            while Cheat.AntiAFK do
+                local vu = game:GetService("VirtualUser")
+                vu:CaptureController()
+                vu:ClickButton2(Vector2.new())
+                task.wait(60)
+            end
+        end)
+    end
+end)
+
+makeToggle(miscPage, "Infinite Jump", false, 2, function(on)
+    Cheat.InfiniteJump = on
+    print("[Cheat] Infinite Jump:", on)
+end)
+
+makeToggle(miscPage, "Auto Collect", false, 3, function(on)
+    Cheat.AutoCollect = on
+    print("[Cheat] Auto Collect:", on)
+    if on then
+        task.spawn(function()
+            while Cheat.AutoCollect do
+                local char = LocalPlayer.Character
+                local root = char and char:FindFirstChild("HumanoidRootPart")
+                if root then
+                    for _, obj in ipairs(workspace:GetDescendants()) do
+                        if obj:IsA("BasePart") and obj.Name:lower():find("coin") then
+                            pcall(function() obj.CFrame = root.CFrame end)
+                        end
+                    end
+                end
+                task.wait(0.5)
+            end
+        end)
+    end
+end)
+
+selectPage("Combat", true)
+print("[Cheat] Menu loaded.")
 }
