@@ -57,10 +57,11 @@ local function bind(inst, prop, key)
     inst[prop] = Theme[key]
 end
 
-local CARD_W, CARD_H = 340, 280
-local TOPBAR_H       = 34
-local SIDEBAR_W      = 105
-local GAP            = 8
+-- РАЗМЕРЫ (увеличены)
+local CARD_W, CARD_H = 460, 380
+local TOPBAR_H       = 38
+local SIDEBAR_W      = 130
+local GAP            = 10
 
 local function new(class, props, children)
     local inst = Instance.new(class)
@@ -91,7 +92,7 @@ new("UICorner", { CornerRadius = UDim.new(0, 6), Parent = CanvasGroup })
 local Outline = new("UIStroke", { Thickness = 1, Parent = CanvasGroup })
 bind(Outline, "Color", "CardBorder")
 local Scale = new("UIScale", { Parent = CanvasGroup })
-new("UISizeConstraint", { MinSize = Vector2.new(200, TOPBAR_H), MaxSize = Vector2.new(1200, 800), Parent = CanvasGroup })
+new("UISizeConstraint", { MinSize = Vector2.new(260, TOPBAR_H), MaxSize = Vector2.new(1400, 900), Parent = CanvasGroup })
 
 local Sections = new("Folder", { Name = "Sections", Parent = CanvasGroup })
 
@@ -106,17 +107,26 @@ local Shadow = new("Frame", {
 bind(Shadow, "BackgroundColor3", "CardBorder")
 
 new("ImageLabel", {
-    Size = UDim2.fromOffset(18, 18), Position = UDim2.new(0, 12, 0.5, 0),
+    Size = UDim2.fromOffset(20, 20), Position = UDim2.new(0, 14, 0.5, 0),
     AnchorPoint = Vector2.new(0, 0.5), BackgroundTransparency = 1,
     Image = LOGO_IMAGE, ScaleType = Enum.ScaleType.Fit, ZIndex = 10, Parent = Topbar,
 })
 
+-- Заголовок в топбаре
+local TitleLbl = new("TextLabel", {
+    Size = UDim2.new(0, 200, 1, 0), Position = UDim2.fromOffset(42, 0),
+    BackgroundTransparency = 1, Text = "Xuilo", TextSize = 13,
+    FontFace = PIXEL_FONT, TextXAlignment = Enum.TextXAlignment.Left,
+    Parent = Topbar,
+})
+bind(TitleLbl, "TextColor3", "Text")
+
 local Buttons = new("Frame", {
-    Size = UDim2.fromOffset(100, 22), AnchorPoint = Vector2.new(1, 0.5),
-    Position = UDim2.new(1, -8, 0.5, 0), BackgroundTransparency = 1, ZIndex = 2, Parent = Topbar,
+    Size = UDim2.fromOffset(100, 24), AnchorPoint = Vector2.new(1, 0.5),
+    Position = UDim2.new(1, -10, 0.5, 0), BackgroundTransparency = 1, ZIndex = 2, Parent = Topbar,
 })
 new("UIListLayout", {
-    FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 3),
+    FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 4),
     VerticalAlignment = Enum.VerticalAlignment.Center,
     HorizontalAlignment = Enum.HorizontalAlignment.Right,
     SortOrder = Enum.SortOrder.LayoutOrder, Parent = Buttons,
@@ -124,7 +134,7 @@ new("UIListLayout", {
 
 local function topbarIconButton(symbol, order)
     local btn = new("TextButton", {
-        Size = UDim2.fromOffset(22, 22), BackgroundTransparency = 1,
+        Size = UDim2.fromOffset(24, 24), BackgroundTransparency = 1,
         AutoButtonColor = false, Text = "", LayoutOrder = order, ZIndex = 2, Parent = Buttons,
     })
     bind(btn, "BackgroundColor3", "ButtonHover")
@@ -133,7 +143,7 @@ local function topbarIconButton(symbol, order)
     bind(s, "Color", "CardBorder")
     local icon = new("TextLabel", {
         Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1,
-        Text = symbol, TextSize = 13, FontFace = PIXEL_FONT, Parent = btn,
+        Text = symbol, TextSize = 14, FontFace = PIXEL_FONT, Parent = btn,
     })
     bind(icon, "TextColor3", "Text")
     btn.MouseEnter:Connect(function()
@@ -162,7 +172,7 @@ new("UIGradient", {
 })
 
 local Pattern = new("ImageLabel", {
-    Size = UDim2.new(1, 0, 0, 100), Position = UDim2.new(0, 0, 1, 0),
+    Size = UDim2.new(1, 0, 0, 120), Position = UDim2.new(0, 0, 1, 0),
     AnchorPoint = Vector2.new(0, 1), BackgroundTransparency = 1,
     Image = PATTERN_IMAGE, ImageTransparency = Theme.PatternTransparency,
     ScaleType = Enum.ScaleType.Tile, TileSize = UDim2.fromOffset(12, 12),
@@ -195,7 +205,7 @@ local Sidebar = new("Frame", {
     BackgroundTransparency = 1, Parent = SidebarPanel,
 })
 new("UIListLayout", {
-    FillDirection = Enum.FillDirection.Vertical, Padding = UDim.new(0, 3),
+    FillDirection = Enum.FillDirection.Vertical, Padding = UDim.new(0, 4),
     SortOrder = Enum.SortOrder.LayoutOrder, Parent = Sidebar,
 })
 
@@ -216,14 +226,14 @@ local function newPage(name)
     local page = new("ScrollingFrame", {
         Name = tostring(name), Size = UDim2.new(1, 0, 1, 0),
         BackgroundTransparency = 1, BorderSizePixel = 0,
-        ScrollBarThickness = 2, ScrollBarImageTransparency = 0.3,
+        ScrollBarThickness = 3, ScrollBarImageTransparency = 0.3,
         CanvasSize = UDim2.new(0, 0, 0, 0),
         AutomaticCanvasSize = Enum.AutomaticSize.Y,
         Visible = false, Parent = Content,
     })
     bind(page, "ScrollBarImageColor3", "Scroll")
-    new("UIListLayout", { Padding = UDim.new(0, 5), SortOrder = Enum.SortOrder.LayoutOrder, Parent = page })
-    new("UIPadding", { PaddingRight = UDim.new(0, 5), PaddingLeft = UDim.new(0, 3), Parent = page })
+    new("UIListLayout", { Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder, Parent = page })
+    new("UIPadding", { PaddingRight = UDim.new(0, 6), PaddingLeft = UDim.new(0, 4), Parent = page })
     Pages[name] = page
     return page
 end
@@ -247,18 +257,18 @@ end
 
 local function pageButton(name, label, order)
     local btn = new("TextButton", {
-        Name = tostring(name), Size = UDim2.new(1, 0, 0, 26), BorderSizePixel = 0,
+        Name = tostring(name), Size = UDim2.new(1, 0, 0, 30), BorderSizePixel = 0,
         AutoButtonColor = false, Text = "", LayoutOrder = order, Parent = Sidebar,
     })
     bind(btn, "BackgroundColor3", "SidebarItem")
     new("UICorner", { CornerRadius = UDim.new(0, 3), Parent = btn })
     local s = new("UIStroke", { Thickness = 1, Transparency = 1, Parent = btn })
     bind(s, "Color", "Accent")
-    new("UIPadding", { PaddingLeft = UDim.new(0, 9), Parent = btn })
+    new("UIPadding", { PaddingLeft = UDim.new(0, 10), Parent = btn })
 
     local lbl = new("TextLabel", {
         Size = UDim2.new(1, 0, 1, 0), BackgroundTransparency = 1,
-        Text = label, TextSize = 11, FontFace = PIXEL_FONT,
+        Text = label, TextSize = 12, FontFace = PIXEL_FONT,
         TextXAlignment = Enum.TextXAlignment.Left, Parent = btn,
     })
     bind(lbl, "TextColor3", "TextDim")
@@ -280,7 +290,7 @@ local toggleApplies = {}
 local function makeToggle(parent, label, default, order, callback)
     local state = default or false
     local row = new("TextButton", {
-        Size = UDim2.new(1, 0, 0, 30), BorderSizePixel = 0,
+        Size = UDim2.new(1, 0, 0, 34), BorderSizePixel = 0,
         AutoButtonColor = false, Text = "", LayoutOrder = order or 0, Parent = parent,
     })
     bind(row, "BackgroundColor3", "Row")
@@ -289,25 +299,25 @@ local function makeToggle(parent, label, default, order, callback)
     bind(rs, "Color", "CardBorder")
 
     local title = new("TextLabel", {
-        Text = label, Size = UDim2.new(1, -55, 1, 0),
-        Position = UDim2.fromOffset(10, 0), BackgroundTransparency = 1,
-        TextSize = 11, FontFace = PIXEL_FONT,
+        Text = label, Size = UDim2.new(1, -70, 1, 0),
+        Position = UDim2.fromOffset(12, 0), BackgroundTransparency = 1,
+        TextSize = 12, FontFace = PIXEL_FONT,
         TextXAlignment = Enum.TextXAlignment.Left, Parent = row,
     })
     bind(title, "TextColor3", "Text")
 
     local pill = new("Frame", {
-        Size = UDim2.fromOffset(30, 16), Position = UDim2.new(1, -10, 0.5, 0),
+        Size = UDim2.fromOffset(34, 18), Position = UDim2.new(1, -12, 0.5, 0),
         AnchorPoint = Vector2.new(1, 0.5), BorderSizePixel = 0, Parent = row,
     })
     new("UICorner", { CornerRadius = UDim.new(1, 0), Parent = pill })
     local knob = new("Frame", {
-        Size = UDim2.fromOffset(10, 10), Position = UDim2.new(0, 3, 0.5, 0),
+        Size = UDim2.fromOffset(12, 12), Position = UDim2.new(0, 3, 0.5, 0),
         AnchorPoint = Vector2.new(0, 0.5), BorderSizePixel = 0, Parent = pill,
     })
     new("UICorner", { CornerRadius = UDim.new(1, 0), Parent = knob })
 
-    local KNOB_ON  = UDim2.new(1, -13, 0.5, 0)
+    local KNOB_ON  = UDim2.new(1, -15, 0.5, 0)
     local KNOB_OFF = UDim2.new(0,   3, 0.5, 0)
 
     local function apply(instant)
@@ -376,7 +386,7 @@ local function makeColorPicker(parent, label, defaultColor, order, callback)
     local h, _s, v = RGBtoHSV(color)
 
     local row = new("TextButton", {
-        Size = UDim2.new(1, 0, 0, 30), BorderSizePixel = 0,
+        Size = UDim2.new(1, 0, 0, 34), BorderSizePixel = 0,
         AutoButtonColor = false, Text = "", LayoutOrder = order or 0, Parent = parent,
     })
     bind(row, "BackgroundColor3", "Row")
@@ -385,15 +395,15 @@ local function makeColorPicker(parent, label, defaultColor, order, callback)
     bind(rs, "Color", "CardBorder")
 
     local title = new("TextLabel", {
-        Text = label, Size = UDim2.new(1, -50, 1, 0),
-        Position = UDim2.fromOffset(10, 0), BackgroundTransparency = 1,
-        TextSize = 11, FontFace = PIXEL_FONT,
+        Text = label, Size = UDim2.new(1, -60, 1, 0),
+        Position = UDim2.fromOffset(12, 0), BackgroundTransparency = 1,
+        TextSize = 12, FontFace = PIXEL_FONT,
         TextXAlignment = Enum.TextXAlignment.Left, Parent = row,
     })
     bind(title, "TextColor3", "Text")
 
     local preview = new("Frame", {
-        Size = UDim2.fromOffset(18, 18), Position = UDim2.new(1, -10, 0.5, 0),
+        Size = UDim2.fromOffset(22, 22), Position = UDim2.new(1, -12, 0.5, 0),
         AnchorPoint = Vector2.new(1, 0.5), BackgroundColor3 = color,
         BorderSizePixel = 0, Parent = row,
     })
@@ -408,7 +418,7 @@ local function makeColorPicker(parent, label, defaultColor, order, callback)
         local origH, origV, origColor = h, v, color
 
         popup = new("Frame", {
-            Size = UDim2.fromOffset(200, 175), AnchorPoint = Vector2.new(0.5, 0.5),
+            Size = UDim2.fromOffset(230, 195), AnchorPoint = Vector2.new(0.5, 0.5),
             Position = UDim2.fromScale(0.5, 0.5), BackgroundColor3 = Theme.Panel,
             BorderSizePixel = 0, ZIndex = 50, Parent = ScreenGui,
         })
@@ -420,7 +430,7 @@ local function makeColorPicker(parent, label, defaultColor, order, callback)
         })
 
         local sqFrame = new("Frame", {
-            Size = UDim2.new(1, 0, 1, -30), BackgroundColor3 = Color3.new(1, 1, 1),
+            Size = UDim2.new(1, 0, 1, -32), BackgroundColor3 = Color3.new(1, 1, 1),
             BorderSizePixel = 0, ClipsDescendants = true, Parent = popup,
         })
         new("UICorner", { CornerRadius = UDim.new(0, 4), Parent = sqFrame })
@@ -460,7 +470,7 @@ local function makeColorPicker(parent, label, defaultColor, order, callback)
         })
 
         local okBtn = new("TextButton", {
-            Size = UDim2.new(0.48, 0, 0, 22), Position = UDim2.new(1, 0, 1, 0),
+            Size = UDim2.new(0.48, 0, 0, 24), Position = UDim2.new(1, 0, 1, 0),
             AnchorPoint = Vector2.new(1, 1), BackgroundColor3 = Theme.SidebarItemActive,
             BorderSizePixel = 0, AutoButtonColor = false, Text = "OK",
             TextSize = 12, FontFace = PIXEL_FONT, TextColor3 = Theme.Text, Parent = popup,
@@ -468,7 +478,7 @@ local function makeColorPicker(parent, label, defaultColor, order, callback)
         new("UICorner", { CornerRadius = UDim.new(0, 4), Parent = okBtn })
 
         local cancelBtn = new("TextButton", {
-            Size = UDim2.new(0.48, 0, 0, 22), Position = UDim2.new(0, 0, 1, 0),
+            Size = UDim2.new(0.48, 0, 0, 24), Position = UDim2.new(0, 0, 1, 0),
             AnchorPoint = Vector2.new(0, 1), BackgroundColor3 = Theme.Row,
             BorderSizePixel = 0, AutoButtonColor = false, Text = "Cancel",
             TextSize = 12, FontFace = PIXEL_FONT, TextColor3 = Theme.TextDim, Parent = popup,
@@ -540,6 +550,140 @@ local function makeColorPicker(parent, label, defaultColor, order, callback)
     }
 end
 
+-- Кнопка (обычная, с текстом)
+local function makeButton(parent, label, order, callback)
+    local btn = new("TextButton", {
+        Size = UDim2.new(1, 0, 0, 34), BorderSizePixel = 0,
+        AutoButtonColor = false, Text = "", LayoutOrder = order or 0, Parent = parent,
+    })
+    bind(btn, "BackgroundColor3", "Row")
+    new("UICorner", { CornerRadius = UDim.new(0, 4), Parent = btn })
+    local rs = new("UIStroke", { Thickness = 1, Transparency = 0.4, Parent = btn })
+    bind(rs, "Color", "CardBorder")
+
+    local title = new("TextLabel", {
+        Text = label, Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1,
+        TextSize = 12, FontFace = PIXEL_FONT, TextColor3 = Theme.Text, Parent = btn,
+    })
+    bind(title, "TextColor3", "Text")
+
+    btn.MouseEnter:Connect(function()
+        tween(btn, { BackgroundColor3 = Theme.RowHover }, 0.1); tween(rs, { Transparency = 0.1 }, 0.1)
+    end)
+    btn.MouseLeave:Connect(function()
+        tween(btn, { BackgroundColor3 = Theme.Row }, 0.1); tween(rs, { Transparency = 0.4 }, 0.1)
+    end)
+    btn.MouseButton1Click:Connect(function()
+        if callback then pcall(callback) end
+    end)
+    return btn
+end
+
+-- Текст-строка (label + value)
+local function makeLabel(parent, label, value, order)
+    local row = new("Frame", {
+        Size = UDim2.new(1, 0, 0, 34), BorderSizePixel = 0,
+        LayoutOrder = order or 0, Parent = parent,
+    })
+    bind(row, "BackgroundColor3", "Row")
+    new("UICorner", { CornerRadius = UDim.new(0, 4), Parent = row })
+    local rs = new("UIStroke", { Thickness = 1, Transparency = 0.4, Parent = row })
+    bind(rs, "Color", "CardBorder")
+
+    local l = new("TextLabel", {
+        Text = label, Size = UDim2.new(0.5, 0, 1, 0),
+        Position = UDim2.fromOffset(12, 0), BackgroundTransparency = 1,
+        TextSize = 12, FontFace = PIXEL_FONT,
+        TextXAlignment = Enum.TextXAlignment.Left, Parent = row,
+    })
+    bind(l, "TextColor3", "Text")
+
+    local v = new("TextLabel", {
+        Text = tostring(value), Size = UDim2.new(0.5, -12, 1, 0),
+        Position = UDim2.new(1, -12, 0, 0), AnchorPoint = Vector2.new(1, 0),
+        BackgroundTransparency = 1, TextSize = 12, FontFace = PIXEL_FONT,
+        TextXAlignment = Enum.TextXAlignment.Right, Parent = row,
+    })
+    bind(v, "TextColor3", "TextDim")
+
+    return {
+        instance = row,
+        set = function(txt) v.Text = tostring(txt) end,
+    }
+end
+
+-- Segmented control (2 варианта)
+local function makeSegment(parent, label, options, default, order, callback)
+    local current = default or options[1]
+
+    local row = new("Frame", {
+        Size = UDim2.new(1, 0, 0, 34), BorderSizePixel = 0,
+        LayoutOrder = order or 0, Parent = parent,
+    })
+    bind(row, "BackgroundColor3", "Row")
+    new("UICorner", { CornerRadius = UDim.new(0, 4), Parent = row })
+    local rs = new("UIStroke", { Thickness = 1, Transparency = 0.4, Parent = row })
+    bind(rs, "Color", "CardBorder")
+
+    local title = new("TextLabel", {
+        Text = label, Size = UDim2.new(1, -160, 1, 0),
+        Position = UDim2.fromOffset(12, 0), BackgroundTransparency = 1,
+        TextSize = 12, FontFace = PIXEL_FONT,
+        TextXAlignment = Enum.TextXAlignment.Left, Parent = row,
+    })
+    bind(title, "TextColor3", "Text")
+
+    local seg = new("Frame", {
+        Size = UDim2.fromOffset(140, 24), AnchorPoint = Vector2.new(1, 0.5),
+        Position = UDim2.new(1, -10, 0.5, 0), BorderSizePixel = 0, Parent = row,
+    })
+    bind(seg, "BackgroundColor3", "Panel")
+    new("UICorner", { CornerRadius = UDim.new(0, 4), Parent = seg })
+    new("UIPadding", {
+        PaddingLeft = UDim.new(0, 2), PaddingRight = UDim.new(0, 2),
+        PaddingTop  = UDim.new(0, 2), PaddingBottom = UDim.new(0, 2), Parent = seg,
+    })
+
+    local buttons = {}
+    local function refresh()
+        for _, b in ipairs(buttons) do
+            if b.label.Text == current then
+                b.btn.BackgroundColor3 = Theme.SidebarItemActive
+                b.lbl.TextColor3 = Theme.Text
+            else
+                b.btn.BackgroundColor3 = Theme.Panel
+                b.lbl.TextColor3 = Theme.TextDim
+            end
+        end
+    end
+
+    for i, opt in ipairs(options) do
+        local b = new("TextButton", {
+            Text = "", AutoButtonColor = false, BorderSizePixel = 0,
+            Position = UDim2.new((i-1) / #options, 0, 0, 0),
+            Size = UDim2.new(1 / #options, -1, 1, 0), Parent = seg,
+        })
+        new("UICorner", { CornerRadius = UDim.new(0, 2), Parent = b })
+        local lbl = new("TextLabel", {
+            Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1,
+            Text = opt, TextSize = 11, FontFace = PIXEL_FONT, Parent = b,
+        })
+        b.MouseButton1Click:Connect(function()
+            current = opt
+            refresh()
+            if callback then pcall(callback, opt) end
+        end)
+        buttons[#buttons+1] = { btn = b, lbl = lbl, label = lbl, text = opt }
+    end
+    refresh()
+
+    return {
+        get = function() return current end,
+        set = function(v) current = v; refresh(); if callback then pcall(callback, v) end end,
+        refresh = refresh,
+    }
+end
+
 -- THEME
 local function applyAllTheme()
     for _, e in ipairs(themedBindings) do e.inst[e.prop] = Theme[e.key] end
@@ -548,7 +692,7 @@ local function applyAllTheme()
     if currentPage then selectPage(currentPage, true) end
 end
 
--- COLLAPSE
+-- COLLAPSE / SHOW / HIDE
 local collapsed = false
 local closing, uiOpen = false, false
 
@@ -651,18 +795,22 @@ UserInputService.InputEnded:Connect(function(input)
     end
 end)
 
--- ==================== API ====================
+-- ==================== API (обёртки с self) ====================
 local API = {}
-function API:newPage(name)                                   return newPage(name) end
-function API:pageButton(name, label, order)                  return pageButton(name, label, order) end
-function API:selectPage(name, instant)                       return selectPage(name, instant) end
-function API:makeToggle(page, label, default, order, cb)     return makeToggle(page, label, default, order, cb) end
-function API:makeColorPicker(page, label, color, order, cb)  return makeColorPicker(page, label, color, order, cb) end
-function API:setTheme(name)                                  setTheme(name); applyAllTheme() end
-function API:toggleUI()                                      toggleUI() end
-function API:show()                                          showUI() end
-function API:hide()                                          hideUI() end
-function API:setCollapsed(v)                                 setCollapsed(v) end
+function API:newPage(name)                                    return newPage(name) end
+function API:pageButton(name, label, order)                   return pageButton(name, label, order) end
+function API:selectPage(name, instant)                        return selectPage(name, instant) end
+function API:makeToggle(page, label, default, order, cb)      return makeToggle(page, label, default, order, cb) end
+function API:makeColorPicker(page, label, color, order, cb)   return makeColorPicker(page, label, color, order, cb) end
+function API:makeButton(page, label, order, cb)               return makeButton(page, label, order, cb) end
+function API:makeLabel(page, label, value, order)             return makeLabel(page, label, value, order) end
+function API:makeSegment(page, label, options, default, order, cb) return makeSegment(page, label, options, default, order, cb) end
+function API:setTheme(name)                                   setTheme(name); applyAllTheme() end
+function API:getTheme()                                       return currentThemeName end
+function API:toggleUI()                                       toggleUI() end
+function API:show()                                           showUI() end
+function API:hide()                                           hideUI() end
+function API:setCollapsed(v)                                  setCollapsed(v) end
 API.ScreenGui = ScreenGui
 API.Theme     = Theme
 return API
