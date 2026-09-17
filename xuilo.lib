@@ -1,12 +1,3 @@
---[[
-    XuiloUI — библиотека UI
-    Возвращает таблицу с API.
-    Использование:
-        local UI = loadstring(game:HttpGet("URL"))()
-        local page = UI:newPage("Combat")
-        UI:makeToggle(page, "Aimbot", false, 1, function(on) end)
-]]
-
 local CoreGui          = game:GetService("CoreGui")
 local Players          = game:GetService("Players")
 local LocalPlayer      = Players.LocalPlayer
@@ -24,7 +15,7 @@ local Themes = {
         Card=Color3.fromRGB(12,12,14), CardBorder=Color3.fromRGB(32,32,37), Topbar=Color3.fromRGB(12,12,14),
         Text=Color3.fromRGB(240,240,242), TextDim=Color3.fromRGB(150,150,158),
         ButtonHover=Color3.fromRGB(28,28,32), Pattern=Color3.fromRGB(120,120,135),
-        PatternTransparency = 0.7,
+        PatternTransparency=0.7,
         Panel=Color3.fromRGB(15,15,18), PanelStroke=Color3.fromRGB(30,30,36),
         Row=Color3.fromRGB(24,24,28), RowHover=Color3.fromRGB(32,32,38),
         SidebarItem=Color3.fromRGB(19,19,23), SidebarItemHover=Color3.fromRGB(26,26,31),
@@ -38,7 +29,7 @@ local Themes = {
         Card=Color3.fromRGB(245,245,248), CardBorder=Color3.fromRGB(210,210,218), Topbar=Color3.fromRGB(240,240,244),
         Text=Color3.fromRGB(20,20,25), TextDim=Color3.fromRGB(110,110,120),
         ButtonHover=Color3.fromRGB(225,225,232), Pattern=Color3.fromRGB(150,150,165),
-        PatternTransparency = 0.9,
+        PatternTransparency=0.9,
         Panel=Color3.fromRGB(235,235,240), PanelStroke=Color3.fromRGB(210,210,220),
         Row=Color3.fromRGB(228,228,234), RowHover=Color3.fromRGB(218,218,226),
         SidebarItem=Color3.fromRGB(230,230,236), SidebarItemHover=Color3.fromRGB(220,220,228),
@@ -96,7 +87,6 @@ CanvasGroup.AnchorPoint = Vector2.new(0.5, 0.5)
 CanvasGroup.BorderSizePixel = 0
 CanvasGroup.Parent = ScreenGui
 bind(CanvasGroup, "BackgroundColor3", "Card")
-
 new("UICorner", { CornerRadius = UDim.new(0, 6), Parent = CanvasGroup })
 local Outline = new("UIStroke", { Thickness = 1, Parent = CanvasGroup })
 bind(Outline, "Color", "CardBorder")
@@ -106,11 +96,9 @@ new("UISizeConstraint", { MinSize = Vector2.new(200, TOPBAR_H), MaxSize = Vector
 local Sections = new("Folder", { Name = "Sections", Parent = CanvasGroup })
 
 local Topbar = new("Frame", {
-    Name = "Topbar", Size = UDim2.new(1, 0, 0, TOPBAR_H),
-    BorderSizePixel = 0, ZIndex = 2, Parent = Sections,
+    Size = UDim2.new(1, 0, 0, TOPBAR_H), BorderSizePixel = 0, ZIndex = 2, Parent = Sections,
 })
 bind(Topbar, "BackgroundColor3", "Topbar")
-
 local Shadow = new("Frame", {
     Size = UDim2.new(1, 0, 0, 1), Position = UDim2.new(0, 0, 1, 0),
     BackgroundTransparency = 0.2, BorderSizePixel = 0, ZIndex = 3, Parent = Topbar,
@@ -125,8 +113,7 @@ new("ImageLabel", {
 
 local Buttons = new("Frame", {
     Size = UDim2.fromOffset(100, 22), AnchorPoint = Vector2.new(1, 0.5),
-    Position = UDim2.new(1, -8, 0.5, 0), BackgroundTransparency = 1,
-    ZIndex = 2, Parent = Topbar,
+    Position = UDim2.new(1, -8, 0.5, 0), BackgroundTransparency = 1, ZIndex = 2, Parent = Topbar,
 })
 new("UIListLayout", {
     FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 3),
@@ -138,20 +125,17 @@ new("UIListLayout", {
 local function topbarIconButton(symbol, order)
     local btn = new("TextButton", {
         Size = UDim2.fromOffset(22, 22), BackgroundTransparency = 1,
-        AutoButtonColor = false, Text = "", LayoutOrder = order,
-        ZIndex = 2, Parent = Buttons,
+        AutoButtonColor = false, Text = "", LayoutOrder = order, ZIndex = 2, Parent = Buttons,
     })
     bind(btn, "BackgroundColor3", "ButtonHover")
     new("UICorner", { CornerRadius = UDim.new(0, 3), Parent = btn })
     local s = new("UIStroke", { Thickness = 1, Transparency = 1, Parent = btn })
     bind(s, "Color", "CardBorder")
-
     local icon = new("TextLabel", {
         Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1,
         Text = symbol, TextSize = 13, FontFace = PIXEL_FONT, Parent = btn,
     })
     bind(icon, "TextColor3", "Text")
-
     btn.MouseEnter:Connect(function()
         tween(btn, { BackgroundTransparency = 0 }, 0.1); tween(s, { Transparency = 0.6 }, 0.1)
     end)
@@ -166,8 +150,7 @@ local CloseBtn                  = topbarIconButton("x", 3)
 
 local Vignette = new("Frame", {
     Size = UDim2.new(1, 0, 0.55, 0), AnchorPoint = Vector2.new(0, 1),
-    Position = UDim2.new(0, 0, 1, 0), BorderSizePixel = 0,
-    ZIndex = 1, Parent = Sections,
+    Position = UDim2.new(0, 0, 1, 0), BorderSizePixel = 0, ZIndex = 1, Parent = Sections,
 })
 bind(Vignette, "BackgroundColor3", "Vignette")
 new("UIGradient", {
@@ -231,7 +214,7 @@ local currentPage = nil
 
 local function newPage(name)
     local page = new("ScrollingFrame", {
-        Name = name, Size = UDim2.new(1, 0, 1, 0),
+        Name = tostring(name), Size = UDim2.new(1, 0, 1, 0),
         BackgroundTransparency = 1, BorderSizePixel = 0,
         ScrollBarThickness = 2, ScrollBarImageTransparency = 0.3,
         CanvasSize = UDim2.new(0, 0, 0, 0),
@@ -264,7 +247,7 @@ end
 
 local function pageButton(name, label, order)
     local btn = new("TextButton", {
-        Size = UDim2.new(1, 0, 0, 26), BorderSizePixel = 0,
+        Name = tostring(name), Size = UDim2.new(1, 0, 0, 26), BorderSizePixel = 0,
         AutoButtonColor = false, Text = "", LayoutOrder = order, Parent = Sidebar,
     })
     bind(btn, "BackgroundColor3", "SidebarItem")
@@ -452,7 +435,6 @@ local function makeColorPicker(parent, label, defaultColor, order, callback)
                 ColorSequenceKeypoint.new(1.00, Color3.fromRGB(255,   0,   0)),
             }), Parent = sqFrame,
         })
-
         local briFrame = new("Frame", {
             Size = UDim2.fromScale(1, 1), BackgroundColor3 = Color3.new(1, 1, 1),
             BorderSizePixel = 0, Parent = sqFrame,
@@ -558,7 +540,7 @@ local function makeColorPicker(parent, label, defaultColor, order, callback)
     }
 end
 
--- THEME + COLLAPSE + TILT
+-- THEME
 local function applyAllTheme()
     for _, e in ipairs(themedBindings) do e.inst[e.prop] = Theme[e.key] end
     Pattern.ImageTransparency = Theme.PatternTransparency
@@ -566,6 +548,7 @@ local function applyAllTheme()
     if currentPage then selectPage(currentPage, true) end
 end
 
+-- COLLAPSE
 local collapsed = false
 local closing, uiOpen = false, false
 
@@ -610,6 +593,7 @@ end, false, Enum.KeyCode.RightShift)
 CloseBtn.MouseButton1Click:Connect(hideUI)
 CollapseBtn.MouseButton1Click:Connect(function() setCollapsed(not collapsed) end)
 
+-- TILT + DRAG
 local MAX_TILT = 2.5
 local currentTilt = 0
 local dragging = false
@@ -668,17 +652,17 @@ UserInputService.InputEnded:Connect(function(input)
 end)
 
 -- ==================== API ====================
-return {
-    ScreenGui      = ScreenGui,
-    newPage        = newPage,
-    pageButton     = pageButton,
-    selectPage     = selectPage,
-    makeToggle     = makeToggle,
-    makeColorPicker= makeColorPicker,
-    setTheme       = function(name) setTheme(name); applyAllTheme() end,
-    toggleUI       = toggleUI,
-    show           = showUI,
-    hide           = hideUI,
-    setCollapsed   = setCollapsed,
-    Theme          = Theme,
-}
+local API = {}
+function API:newPage(name)                                   return newPage(name) end
+function API:pageButton(name, label, order)                  return pageButton(name, label, order) end
+function API:selectPage(name, instant)                       return selectPage(name, instant) end
+function API:makeToggle(page, label, default, order, cb)     return makeToggle(page, label, default, order, cb) end
+function API:makeColorPicker(page, label, color, order, cb)  return makeColorPicker(page, label, color, order, cb) end
+function API:setTheme(name)                                  setTheme(name); applyAllTheme() end
+function API:toggleUI()                                      toggleUI() end
+function API:show()                                          showUI() end
+function API:hide()                                          hideUI() end
+function API:setCollapsed(v)                                 setCollapsed(v) end
+API.ScreenGui = ScreenGui
+API.Theme     = Theme
+return API
