@@ -1,4 +1,12 @@
--- menu.lua — сам каркас меню (загружай на GitHub raw / Pastebin raw)
+--[[
+    XuiloUI — библиотека UI
+    Возвращает таблицу с API.
+    Использование:
+        local UI = loadstring(game:HttpGet("URL"))()
+        local page = UI:newPage("Combat")
+        UI:makeToggle(page, "Aimbot", false, 1, function(on) end)
+]]
+
 local CoreGui          = game:GetService("CoreGui")
 local Players          = game:GetService("Players")
 local LocalPlayer      = Players.LocalPlayer
@@ -82,7 +90,6 @@ local ok = pcall(function() ScreenGui.Parent = CoreGui end)
 if not ok then ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
 
 local CanvasGroup = Instance.new("CanvasGroup")
-CanvasGroup.Name = "CanvasGroup"
 CanvasGroup.Size = UDim2.fromOffset(CARD_W, CARD_H)
 CanvasGroup.Position = UDim2.fromScale(0.5, 0.5)
 CanvasGroup.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -90,15 +97,11 @@ CanvasGroup.BorderSizePixel = 0
 CanvasGroup.Parent = ScreenGui
 bind(CanvasGroup, "BackgroundColor3", "Card")
 
-local Corner = Instance.new("UICorner"); Corner.CornerRadius = UDim.new(0, 6); Corner.Parent = CanvasGroup
-local Outline = Instance.new("UIStroke"); Outline.Thickness = 1; Outline.Parent = CanvasGroup
+new("UICorner", { CornerRadius = UDim.new(0, 6), Parent = CanvasGroup })
+local Outline = new("UIStroke", { Thickness = 1, Parent = CanvasGroup })
 bind(Outline, "Color", "CardBorder")
-
-local Scale = Instance.new("UIScale"); Scale.Parent = CanvasGroup
-local Constraint = Instance.new("UISizeConstraint")
-Constraint.MinSize = Vector2.new(200, TOPBAR_H)
-Constraint.MaxSize = Vector2.new(1200, 800)
-Constraint.Parent = CanvasGroup
+local Scale = new("UIScale", { Parent = CanvasGroup })
+new("UISizeConstraint", { MinSize = Vector2.new(200, TOPBAR_H), MaxSize = Vector2.new(1200, 800), Parent = CanvasGroup })
 
 local Sections = new("Folder", { Name = "Sections", Parent = CanvasGroup })
 
@@ -109,47 +112,42 @@ local Topbar = new("Frame", {
 bind(Topbar, "BackgroundColor3", "Topbar")
 
 local Shadow = new("Frame", {
-    Name = "Shadow", Size = UDim2.new(1, 0, 0, 1),
-    Position = UDim2.new(0, 0, 1, 0), BackgroundTransparency = 0.2,
-    BorderSizePixel = 0, ZIndex = 3, Parent = Topbar,
+    Size = UDim2.new(1, 0, 0, 1), Position = UDim2.new(0, 0, 1, 0),
+    BackgroundTransparency = 0.2, BorderSizePixel = 0, ZIndex = 3, Parent = Topbar,
 })
 bind(Shadow, "BackgroundColor3", "CardBorder")
 
 new("ImageLabel", {
-    Name = "Logo", Size = UDim2.fromOffset(18, 18),
-    Position = UDim2.new(0, 12, 0.5, 0),
-    AnchorPoint = Vector2.new(0, 0.5),
-    BackgroundTransparency = 1, Image = LOGO_IMAGE,
-    ScaleType = Enum.ScaleType.Fit, ZIndex = 10, Parent = Topbar,
+    Size = UDim2.fromOffset(18, 18), Position = UDim2.new(0, 12, 0.5, 0),
+    AnchorPoint = Vector2.new(0, 0.5), BackgroundTransparency = 1,
+    Image = LOGO_IMAGE, ScaleType = Enum.ScaleType.Fit, ZIndex = 10, Parent = Topbar,
 })
 
 local Buttons = new("Frame", {
-    Name = "Buttons", Size = UDim2.fromOffset(100, 22),
-    AnchorPoint = Vector2.new(1, 0.5),
-    Position = UDim2.new(1, -8, 0.5, 0),
-    BackgroundTransparency = 1, ZIndex = 2, Parent = Topbar,
+    Size = UDim2.fromOffset(100, 22), AnchorPoint = Vector2.new(1, 0.5),
+    Position = UDim2.new(1, -8, 0.5, 0), BackgroundTransparency = 1,
+    ZIndex = 2, Parent = Topbar,
 })
 new("UIListLayout", {
-    FillDirection = Enum.FillDirection.Horizontal,
-    Padding = UDim.new(0, 3),
+    FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 3),
     VerticalAlignment = Enum.VerticalAlignment.Center,
     HorizontalAlignment = Enum.HorizontalAlignment.Right,
     SortOrder = Enum.SortOrder.LayoutOrder, Parent = Buttons,
 })
 
-local function topbarIconButton(name, symbol, order)
+local function topbarIconButton(symbol, order)
     local btn = new("TextButton", {
-        Name = name, Size = UDim2.fromOffset(22, 22),
-        BackgroundTransparency = 1, AutoButtonColor = false,
-        Text = "", LayoutOrder = order, ZIndex = 2, Parent = Buttons,
+        Size = UDim2.fromOffset(22, 22), BackgroundTransparency = 1,
+        AutoButtonColor = false, Text = "", LayoutOrder = order,
+        ZIndex = 2, Parent = Buttons,
     })
     bind(btn, "BackgroundColor3", "ButtonHover")
-    local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0, 3); c.Parent = btn
-    local s = Instance.new("UIStroke"); s.Thickness = 1; s.Transparency = 1; s.Parent = btn
+    new("UICorner", { CornerRadius = UDim.new(0, 3), Parent = btn })
+    local s = new("UIStroke", { Thickness = 1, Transparency = 1, Parent = btn })
     bind(s, "Color", "CardBorder")
 
     local icon = new("TextLabel", {
-        Name = "Icon", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1,
+        Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1,
         Text = symbol, TextSize = 13, FontFace = PIXEL_FONT, Parent = btn,
     })
     bind(icon, "TextColor3", "Text")
@@ -163,13 +161,13 @@ local function topbarIconButton(name, symbol, order)
     return btn, icon
 end
 
-local CollapseBtn, CollapseIcon = topbarIconButton("Collapse", "−", 2)
-local CloseBtn                  = topbarIconButton("Close", "x", 3)
+local CollapseBtn, CollapseIcon = topbarIconButton("−", 2)
+local CloseBtn                  = topbarIconButton("x", 3)
 
 local Vignette = new("Frame", {
-    Size = UDim2.new(1, 0, 0.55, 0),
-    AnchorPoint = Vector2.new(0, 1), Position = UDim2.new(0, 0, 1, 0),
-    BorderSizePixel = 0, ZIndex = 1, Parent = Sections,
+    Size = UDim2.new(1, 0, 0.55, 0), AnchorPoint = Vector2.new(0, 1),
+    Position = UDim2.new(0, 0, 1, 0), BorderSizePixel = 0,
+    ZIndex = 1, Parent = Sections,
 })
 bind(Vignette, "BackgroundColor3", "Vignette")
 new("UIGradient", {
@@ -177,31 +175,20 @@ new("UIGradient", {
         NumberSequenceKeypoint.new(0, 1),
         NumberSequenceKeypoint.new(0.6, 0.75),
         NumberSequenceKeypoint.new(1, 0.1),
-    }),
-    Rotation = 90, Parent = Vignette,
+    }), Rotation = 90, Parent = Vignette,
 })
 
 local Pattern = new("ImageLabel", {
-    Name = "Pattern", Size = UDim2.new(1, 0, 0, 100),
-    Position = UDim2.new(0, 0, 1, 0), AnchorPoint = Vector2.new(0, 1),
-    BackgroundTransparency = 1, Image = PATTERN_IMAGE,
-    ImageTransparency = Theme.PatternTransparency,
+    Size = UDim2.new(1, 0, 0, 100), Position = UDim2.new(0, 0, 1, 0),
+    AnchorPoint = Vector2.new(0, 1), BackgroundTransparency = 1,
+    Image = PATTERN_IMAGE, ImageTransparency = Theme.PatternTransparency,
     ScaleType = Enum.ScaleType.Tile, TileSize = UDim2.fromOffset(12, 12),
     ZIndex = 3, Parent = Sections,
 })
 bind(Pattern, "ImageColor3", "Pattern")
-new("UIGradient", {
-    Transparency = NumberSequence.new({
-        NumberSequenceKeypoint.new(0, 1),
-        NumberSequenceKeypoint.new(0.7, 0.85),
-        NumberSequenceKeypoint.new(1, 0.15),
-    }),
-    Rotation = 90, Parent = Pattern,
-})
 
 local Body = new("Frame", {
-    Name = "Body", Size = UDim2.new(1, 0, 1, -TOPBAR_H),
-    Position = UDim2.fromOffset(0, TOPBAR_H),
+    Size = UDim2.new(1, 0, 1, -TOPBAR_H), Position = UDim2.fromOffset(0, TOPBAR_H),
     BackgroundTransparency = 1, ZIndex = 2, Parent = Sections,
 })
 new("UIPadding", {
@@ -212,36 +199,34 @@ new("UIPadding", {
 local function makePanel(parent, props, bgKey, strokeKey)
     local f = new("Frame", props or {})
     f.BorderSizePixel = 0; f.Parent = parent
-    local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0, 4); c.Parent = f
-    local s = Instance.new("UIStroke"); s.Thickness = 1; s.Transparency = 0.3; s.Parent = f
+    new("UICorner", { CornerRadius = UDim.new(0, 4), Parent = f })
+    local s = new("UIStroke", { Thickness = 1, Transparency = 0.3, Parent = f })
     bind(f, "BackgroundColor3", bgKey or "Panel")
     bind(s, "Color", strokeKey or "PanelStroke")
     return f
 end
 
-local SidebarPanel = makePanel(Body, { Name="SidebarPanel", Size=UDim2.new(0, SIDEBAR_W, 1, 0), Parent=Body })
+local SidebarPanel = makePanel(Body, { Size=UDim2.new(0, SIDEBAR_W, 1, 0), Parent=Body })
 local Sidebar = new("Frame", {
-    Name = "Sidebar", Size = UDim2.new(1, -8, 1, -8),
-    Position = UDim2.fromOffset(4, 4), BackgroundTransparency = 1, Parent = SidebarPanel,
+    Size = UDim2.new(1, -8, 1, -8), Position = UDim2.fromOffset(4, 4),
+    BackgroundTransparency = 1, Parent = SidebarPanel,
 })
 new("UIListLayout", {
-    FillDirection = Enum.FillDirection.Vertical,
-    Padding = UDim.new(0, 3), SortOrder = Enum.SortOrder.LayoutOrder, Parent = Sidebar,
+    FillDirection = Enum.FillDirection.Vertical, Padding = UDim.new(0, 3),
+    SortOrder = Enum.SortOrder.LayoutOrder, Parent = Sidebar,
 })
 
 local ContentPanel = makePanel(Body, {
-    Name="ContentPanel",
     Size = UDim2.new(1, -(SIDEBAR_W + GAP), 1, 0),
     Position = UDim2.fromOffset(SIDEBAR_W + GAP, 0), Parent = Body,
 })
 local Content = new("Frame", {
-    Name = "Content", Size = UDim2.new(1, -8, 1, -8),
-    Position = UDim2.fromOffset(4, 4), BackgroundTransparency = 1, Parent = ContentPanel,
+    Size = UDim2.new(1, -8, 1, -8), Position = UDim2.fromOffset(4, 4),
+    BackgroundTransparency = 1, Parent = ContentPanel,
 })
 
 -- PAGE SYSTEM
-local Pages = {}
-local PageButtons = {}
+local Pages, PageButtons = {}, {}
 local currentPage = nil
 
 local function newPage(name)
@@ -279,13 +264,12 @@ end
 
 local function pageButton(name, label, order)
     local btn = new("TextButton", {
-        Name = name, Size = UDim2.new(1, 0, 0, 26),
-        BorderSizePixel = 0, AutoButtonColor = false, Text = "",
-        LayoutOrder = order, Parent = Sidebar,
+        Size = UDim2.new(1, 0, 0, 26), BorderSizePixel = 0,
+        AutoButtonColor = false, Text = "", LayoutOrder = order, Parent = Sidebar,
     })
     bind(btn, "BackgroundColor3", "SidebarItem")
-    local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0, 3); c.Parent = btn
-    local s = Instance.new("UIStroke"); s.Thickness = 1; s.Transparency = 1; s.Parent = btn
+    new("UICorner", { CornerRadius = UDim.new(0, 3), Parent = btn })
+    local s = new("UIStroke", { Thickness = 1, Transparency = 1, Parent = btn })
     bind(s, "Color", "Accent")
     new("UIPadding", { PaddingLeft = UDim.new(0, 9), Parent = btn })
 
@@ -300,33 +284,25 @@ local function pageButton(name, label, order)
 
     btn.MouseButton1Click:Connect(function() selectPage(name) end)
     btn.MouseEnter:Connect(function()
-        if currentPage ~= name then
-            tween(btn, { BackgroundColor3 = Theme.SidebarItemHover }, 0.1)
-        end
+        if currentPage ~= name then tween(btn, { BackgroundColor3 = Theme.SidebarItemHover }, 0.1) end
     end)
     btn.MouseLeave:Connect(function()
-        if currentPage ~= name then
-            tween(btn, { BackgroundColor3 = Theme.SidebarItem }, 0.1)
-        end
+        if currentPage ~= name then tween(btn, { BackgroundColor3 = Theme.SidebarItem }, 0.1) end
     end)
     return btn
 end
 
--- WIDGET: TOGGLE
+-- TOGGLE
 local toggleApplies = {}
-local toggleResets  = {}
-
 local function makeToggle(parent, label, default, order, callback)
     local state = default or false
-
     local row = new("TextButton", {
-        Name = "Toggle_" .. label, Size = UDim2.new(1, 0, 0, 30),
-        BorderSizePixel = 0, AutoButtonColor = false, Text = "",
-        LayoutOrder = order or 0, Parent = parent,
+        Size = UDim2.new(1, 0, 0, 30), BorderSizePixel = 0,
+        AutoButtonColor = false, Text = "", LayoutOrder = order or 0, Parent = parent,
     })
     bind(row, "BackgroundColor3", "Row")
-    local rc = Instance.new("UICorner"); rc.CornerRadius = UDim.new(0, 4); rc.Parent = row
-    local rs = Instance.new("UIStroke"); rs.Thickness = 1; rs.Transparency = 0.4; rs.Parent = row
+    new("UICorner", { CornerRadius = UDim.new(0, 4), Parent = row })
+    local rs = new("UIStroke", { Thickness = 1, Transparency = 0.4, Parent = row })
     bind(rs, "Color", "CardBorder")
 
     local title = new("TextLabel", {
@@ -338,18 +314,15 @@ local function makeToggle(parent, label, default, order, callback)
     bind(title, "TextColor3", "Text")
 
     local pill = new("Frame", {
-        Name = "Pill", Size = UDim2.fromOffset(30, 16),
-        Position = UDim2.new(1, -10, 0.5, 0), AnchorPoint = Vector2.new(1, 0.5),
-        BorderSizePixel = 0, Parent = row,
+        Size = UDim2.fromOffset(30, 16), Position = UDim2.new(1, -10, 0.5, 0),
+        AnchorPoint = Vector2.new(1, 0.5), BorderSizePixel = 0, Parent = row,
     })
-    local pc = Instance.new("UICorner"); pc.CornerRadius = UDim.new(1, 0); pc.Parent = pill
-
+    new("UICorner", { CornerRadius = UDim.new(1, 0), Parent = pill })
     local knob = new("Frame", {
-        Name = "Knob", Size = UDim2.fromOffset(10, 10),
-        Position = UDim2.new(0, 3, 0.5, 0), AnchorPoint = Vector2.new(0, 0.5),
-        BorderSizePixel = 0, Parent = pill,
+        Size = UDim2.fromOffset(10, 10), Position = UDim2.new(0, 3, 0.5, 0),
+        AnchorPoint = Vector2.new(0, 0.5), BorderSizePixel = 0, Parent = pill,
     })
-    local kc = Instance.new("UICorner"); kc.CornerRadius = UDim.new(1, 0); kc.Parent = knob
+    new("UICorner", { CornerRadius = UDim.new(1, 0), Parent = knob })
 
     local KNOB_ON  = UDim2.new(1, -13, 0.5, 0)
     local KNOB_OFF = UDim2.new(0,   3, 0.5, 0)
@@ -366,7 +339,6 @@ local function makeToggle(parent, label, default, order, callback)
     end
     apply(true)
     toggleApplies[#toggleApplies+1] = function() apply(true) end
-    toggleResets[#toggleResets+1]   = function() state = default or false; apply(true) end
 
     row.MouseEnter:Connect(function()
         tween(row, { BackgroundColor3 = Theme.RowHover }, 0.1); tween(rs, { Transparency = 0.1 }, 0.1)
@@ -376,17 +348,16 @@ local function makeToggle(parent, label, default, order, callback)
     end)
     row.MouseButton1Click:Connect(function()
         state = not state; apply(false)
-        if callback then callback(state) end
+        if callback then pcall(callback, state) end
     end)
 
     return {
-        instance = row,
         get = function() return state end,
-        set = function(v) state = v and true or false; apply(false); if callback then callback(state) end end,
+        set = function(v) state = v and true or false; apply(false); if callback then pcall(callback, state) end end,
     }
 end
 
--- WIDGET: COLOR PICKER
+-- COLOR PICKER
 local function HSVtoRGB(h, s, v)
     local r, g, b
     local i = math.floor(h * 6)
@@ -414,8 +385,7 @@ local function RGBtoHSV(color)
     elseif max == r then h = (g - b) / (max - min) + (g < b and 6 or 0)
     elseif max == g then h = (b - r) / (max - min) + 2
     else h = (r - g) / (max - min) + 4 end
-    h = h / 6
-    return h, s, v
+    return h / 6, s, v
 end
 
 local function makeColorPicker(parent, label, defaultColor, order, callback)
@@ -423,13 +393,12 @@ local function makeColorPicker(parent, label, defaultColor, order, callback)
     local h, _s, v = RGBtoHSV(color)
 
     local row = new("TextButton", {
-        Name = "Color_" .. label, Size = UDim2.new(1, 0, 0, 30),
-        BorderSizePixel = 0, AutoButtonColor = false, Text = "",
-        LayoutOrder = order or 0, Parent = parent,
+        Size = UDim2.new(1, 0, 0, 30), BorderSizePixel = 0,
+        AutoButtonColor = false, Text = "", LayoutOrder = order or 0, Parent = parent,
     })
     bind(row, "BackgroundColor3", "Row")
-    local rc = Instance.new("UICorner"); rc.CornerRadius = UDim.new(0, 4); rc.Parent = row
-    local rs = Instance.new("UIStroke"); rs.Thickness = 1; rs.Transparency = 0.4; rs.Parent = row
+    new("UICorner", { CornerRadius = UDim.new(0, 4), Parent = row })
+    local rs = new("UIStroke", { Thickness = 1, Transparency = 0.4, Parent = row })
     bind(rs, "Color", "CardBorder")
 
     local title = new("TextLabel", {
@@ -441,12 +410,12 @@ local function makeColorPicker(parent, label, defaultColor, order, callback)
     bind(title, "TextColor3", "Text")
 
     local preview = new("Frame", {
-        Name = "Preview", Size = UDim2.fromOffset(18, 18),
-        Position = UDim2.new(1, -10, 0.5, 0), AnchorPoint = Vector2.new(1, 0.5),
-        BackgroundColor3 = color, BorderSizePixel = 0, Parent = row,
+        Size = UDim2.fromOffset(18, 18), Position = UDim2.new(1, -10, 0.5, 0),
+        AnchorPoint = Vector2.new(1, 0.5), BackgroundColor3 = color,
+        BorderSizePixel = 0, Parent = row,
     })
-    local pc = Instance.new("UICorner"); pc.CornerRadius = UDim.new(0, 3); pc.Parent = preview
-    local ps = Instance.new("UIStroke"); ps.Color = Theme.CardBorder; ps.Thickness = 1; ps.Parent = preview
+    new("UICorner", { CornerRadius = UDim.new(0, 3), Parent = preview })
+    new("UIStroke", { Color = Theme.CardBorder, Thickness = 1, Parent = preview })
 
     local popup = nil
     local function closePopup() if popup then popup:Destroy(); popup = nil end end
@@ -456,25 +425,22 @@ local function makeColorPicker(parent, label, defaultColor, order, callback)
         local origH, origV, origColor = h, v, color
 
         popup = new("Frame", {
-            Name = "ColorPickerPopup", Size = UDim2.fromOffset(200, 175),
-            AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5),
-            BackgroundColor3 = Theme.Panel, BorderSizePixel = 0,
-            ZIndex = 50, Parent = ScreenGui,
+            Size = UDim2.fromOffset(200, 175), AnchorPoint = Vector2.new(0.5, 0.5),
+            Position = UDim2.fromScale(0.5, 0.5), BackgroundColor3 = Theme.Panel,
+            BorderSizePixel = 0, ZIndex = 50, Parent = ScreenGui,
         })
-        local pcc = Instance.new("UICorner"); pcc.CornerRadius = UDim.new(0, 6); pcc.Parent = popup
-        local pss = Instance.new("UIStroke"); pss.Color = Theme.CardBorder; pss.Thickness = 1; pss.Parent = popup
+        new("UICorner", { CornerRadius = UDim.new(0, 6), Parent = popup })
+        new("UIStroke", { Color = Theme.CardBorder, Thickness = 1, Parent = popup })
         new("UIPadding", {
             PaddingLeft = UDim.new(0, 10), PaddingRight = UDim.new(0, 10),
             PaddingTop = UDim.new(0, 10), PaddingBottom = UDim.new(0, 10), Parent = popup,
         })
 
         local sqFrame = new("Frame", {
-            Name = "Square", Size = UDim2.new(1, 0, 1, -30),
-            BackgroundColor3 = Color3.new(1, 1, 1),
+            Size = UDim2.new(1, 0, 1, -30), BackgroundColor3 = Color3.new(1, 1, 1),
             BorderSizePixel = 0, ClipsDescendants = true, Parent = popup,
         })
-        local sqc = Instance.new("UICorner"); sqc.CornerRadius = UDim.new(0, 4); sqc.Parent = sqFrame
-
+        new("UICorner", { CornerRadius = UDim.new(0, 4), Parent = sqFrame })
         new("UIGradient", {
             Color = ColorSequence.new({
                 ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255,   0,   0)),
@@ -484,13 +450,11 @@ local function makeColorPicker(parent, label, defaultColor, order, callback)
                 ColorSequenceKeypoint.new(0.67, Color3.fromRGB(  0,   0, 255)),
                 ColorSequenceKeypoint.new(0.83, Color3.fromRGB(255,   0, 255)),
                 ColorSequenceKeypoint.new(1.00, Color3.fromRGB(255,   0,   0)),
-            }),
-            Parent = sqFrame,
+            }), Parent = sqFrame,
         })
 
         local briFrame = new("Frame", {
-            Size = UDim2.fromScale(1, 1),
-            BackgroundColor3 = Color3.new(1, 1, 1),
+            Size = UDim2.fromScale(1, 1), BackgroundColor3 = Color3.new(1, 1, 1),
             BorderSizePixel = 0, Parent = sqFrame,
         })
         new("UIGradient", {
@@ -498,44 +462,36 @@ local function makeColorPicker(parent, label, defaultColor, order, callback)
             Transparency = NumberSequence.new({
                 NumberSequenceKeypoint.new(0, 1),
                 NumberSequenceKeypoint.new(1, 0),
-            }),
-            Rotation = 90, Parent = briFrame,
+            }), Rotation = 90, Parent = briFrame,
         })
 
         local dot = new("Frame", {
-            Name = "CursorDot", Size = UDim2.fromOffset(12, 12),
-            AnchorPoint = Vector2.new(0.5, 0.5),
-            Position = UDim2.new(h, 0, 1 - v, 0),
-            BackgroundTransparency = 1, ZIndex = 5, Parent = sqFrame,
+            Size = UDim2.fromOffset(12, 12), AnchorPoint = Vector2.new(0.5, 0.5),
+            Position = UDim2.new(h, 0, 1 - v, 0), BackgroundTransparency = 1,
+            ZIndex = 5, Parent = sqFrame,
         })
-        local dotStroke = Instance.new("UIStroke")
-        dotStroke.Color = Color3.new(1, 1, 1); dotStroke.Thickness = 2; dotStroke.Parent = dot
+        new("UIStroke", { Color = Color3.new(1, 1, 1), Thickness = 2, Parent = dot })
 
         local hit = new("TextButton", {
-            Size = UDim2.fromScale(1, 1),
-            BackgroundTransparency = 1, Text = "",
-            AutoButtonColor = false, ZIndex = 6, Parent = sqFrame,
+            Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1,
+            Text = "", AutoButtonColor = false, ZIndex = 6, Parent = sqFrame,
         })
 
         local okBtn = new("TextButton", {
             Size = UDim2.new(0.48, 0, 0, 22), Position = UDim2.new(1, 0, 1, 0),
             AnchorPoint = Vector2.new(1, 1), BackgroundColor3 = Theme.SidebarItemActive,
             BorderSizePixel = 0, AutoButtonColor = false, Text = "OK",
-            TextSize = 12, FontFace = PIXEL_FONT, TextColor3 = Theme.Text,
-            Parent = popup,
+            TextSize = 12, FontFace = PIXEL_FONT, TextColor3 = Theme.Text, Parent = popup,
         })
-        local okc = Instance.new("UICorner"); okc.CornerRadius = UDim.new(0, 4); okc.Parent = okBtn
+        new("UICorner", { CornerRadius = UDim.new(0, 4), Parent = okBtn })
 
         local cancelBtn = new("TextButton", {
             Size = UDim2.new(0.48, 0, 0, 22), Position = UDim2.new(0, 0, 1, 0),
             AnchorPoint = Vector2.new(0, 1), BackgroundColor3 = Theme.Row,
             BorderSizePixel = 0, AutoButtonColor = false, Text = "Cancel",
-            TextSize = 12, FontFace = PIXEL_FONT, TextColor3 = Theme.TextDim,
-            Parent = popup,
+            TextSize = 12, FontFace = PIXEL_FONT, TextColor3 = Theme.TextDim, Parent = popup,
         })
-        local cbc = Instance.new("UICorner"); cbc.CornerRadius = UDim.new(0, 4); cbc.Parent = cancelBtn
-
-        local function updateDot() dot.Position = UDim2.new(h, 0, 1 - v, 0) end
+        new("UICorner", { CornerRadius = UDim.new(0, 4), Parent = cancelBtn })
 
         local dragging = false
         local function setFromPos(x, y)
@@ -543,7 +499,7 @@ local function makeColorPicker(parent, label, defaultColor, order, callback)
             local relY = (y - sqFrame.AbsolutePosition.Y) / math.max(sqFrame.AbsoluteSize.Y, 1)
             h = math.clamp(relX, 0, 1)
             v = 1 - math.clamp(relY, 0, 1)
-            updateDot()
+            dot.Position = UDim2.new(h, 0, 1 - v, 0)
         end
 
         hit.InputBegan:Connect(function(input)
@@ -553,7 +509,6 @@ local function makeColorPicker(parent, label, defaultColor, order, callback)
                 setFromPos(input.Position.X, input.Position.Y)
             end
         end)
-
         local conn
         conn = UserInputService.InputChanged:Connect(function(input)
             if not popup or not popup.Parent then pcall(function() conn:Disconnect() end); return end
@@ -575,7 +530,7 @@ local function makeColorPicker(parent, label, defaultColor, order, callback)
         okBtn.MouseButton1Click:Connect(function()
             color = HSVtoRGB(h, 1, v)
             preview.BackgroundColor3 = color
-            if callback then callback(color) end
+            if callback then pcall(callback, color) end
             closePopup()
         end)
         cancelBtn.MouseButton1Click:Connect(function()
@@ -593,27 +548,24 @@ local function makeColorPicker(parent, label, defaultColor, order, callback)
     row.MouseButton1Click:Connect(openPopup)
 
     return {
-        instance = row,
         get = function() return color end,
         set = function(c)
             color = c
             h, _s, v = RGBtoHSV(c)
             preview.BackgroundColor3 = c
-            if callback then callback(c) end
+            if callback then pcall(callback, c) end
         end,
     }
 end
 
--- THEME
+-- THEME + COLLAPSE + TILT
 local function applyAllTheme()
     for _, e in ipairs(themedBindings) do e.inst[e.prop] = Theme[e.key] end
     Pattern.ImageTransparency = Theme.PatternTransparency
     for _, fn in ipairs(toggleApplies) do fn() end
     if currentPage then selectPage(currentPage, true) end
 end
-local function switchTheme(name) setTheme(name); applyAllTheme() end
 
--- COLLAPSE
 local collapsed = false
 local closing, uiOpen = false, false
 
@@ -658,12 +610,10 @@ end, false, Enum.KeyCode.RightShift)
 CloseBtn.MouseButton1Click:Connect(hideUI)
 CollapseBtn.MouseButton1Click:Connect(function() setCollapsed(not collapsed) end)
 
--- TILT + DRAG
 local MAX_TILT = 2.5
 local currentTilt = 0
 local dragging = false
-local dragStartMouse  = Vector2.new()
-local dragStartPixels = Vector2.new()
+local dragStartMouse, dragStartPixels = Vector2.new(), Vector2.new()
 local dragTargetPixels = nil
 
 local function getPixelPos(u)
@@ -689,8 +639,8 @@ RunService.RenderStepped:Connect(function(dt)
     end
 end)
 
-Topbar.InputBegan:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
+Topbar.InputBegan:Connect(function(input, gp)
+    if gp then return end
     if input.UserInputType == Enum.UserInputType.MouseButton1
         or input.UserInputType == Enum.UserInputType.Touch then
         dragging = true
@@ -717,186 +667,18 @@ UserInputService.InputEnded:Connect(function(input)
     end
 end)
 
--- ============================================================
--- ============  ПРИМЕР ЧИТА  =================================
--- ============================================================
-local Cheat = {
-    Aimbot=false, SilentAim=false, AimbotFOVColor=Color3.fromRGB(120,220,140),
-    ESP=false, ESPColor=Color3.fromRGB(255,80,80),
-    Chams=false, Fullbright=false, NoFog=false,
-    Speed=false, JumpPower=false, Fly=false, Noclip=false,
-    AntiAFK=false, InfiniteJump=false, AutoCollect=false,
-}
-
--- COMBAT
-pageButton("Combat", "Combat", 1)
-local combatPage = newPage("Combat")
-
-makeToggle(combatPage, "Aimbot", false, 1, function(on)
-    Cheat.Aimbot = on
-    print("[Cheat] Aimbot:", on)
-end)
-
-makeToggle(combatPage, "Silent Aim", false, 2, function(on)
-    Cheat.SilentAim = on
-    print("[Cheat] Silent Aim:", on)
-end)
-
-makeColorPicker(combatPage, "Aimbot FOV Color", Color3.fromRGB(120, 220, 140), 3, function(c)
-    Cheat.AimbotFOVColor = c
-    print("[Cheat] FOV Color:", c)
-end)
-
--- VISUALS
-pageButton("Visuals", "Visuals", 2)
-local visualPage = newPage("Visuals")
-
-makeToggle(visualPage, "Player ESP", false, 1, function(on)
-    Cheat.ESP = on
-    print("[Cheat] ESP:", on)
-    for _, plr in ipairs(Players:GetPlayers()) do
-        if plr ~= LocalPlayer and plr.Character then
-            local hl = plr.Character:FindFirstChild("CheatHighlight")
-            if on then
-                if not hl then
-                    hl = Instance.new("Highlight")
-                    hl.Name = "CheatHighlight"
-                    hl.FillColor = Cheat.ESPColor
-                    hl.OutlineColor = Color3.new(1,1,1)
-                    hl.Parent = plr.Character
-                end
-            else
-                if hl then hl:Destroy() end
-            end
-        end
-    end
-end)
-
-makeColorPicker(visualPage, "ESP Color", Color3.fromRGB(255, 80, 80), 2, function(c)
-    Cheat.ESPColor = c
-    print("[Cheat] ESP Color:", c)
-    for _, plr in ipairs(Players:GetPlayers()) do
-        local hl = plr.Character and plr.Character:FindFirstChild("CheatHighlight")
-        if hl then hl.FillColor = c end
-    end
-end)
-
-makeToggle(visualPage, "Chams", false, 3, function(on)
-    Cheat.Chams = on
-    print("[Cheat] Chams:", on)
-end)
-
-makeToggle(visualPage, "Fullbright", false, 4, function(on)
-    Cheat.Fullbright = on
-    print("[Cheat] Fullbright:", on)
-    local lighting = game:GetService("Lighting")
-    if on then
-        lighting.Brightness = 5
-        lighting.ClockTime = 12
-        lighting.FogEnd = 100000
-    else
-        lighting.Brightness = 2
-        lighting.ClockTime = 14
-    end
-end)
-
-makeToggle(visualPage, "No Fog", false, 5, function(on)
-    Cheat.NoFog = on
-    print("[Cheat] No Fog:", on)
-    game:GetService("Lighting").FogEnd = on and 100000 or 1000
-end)
-
--- MOVEMENT
-pageButton("Movement", "Movement", 3)
-local movePage = newPage("Movement")
-
-makeToggle(movePage, "Speed Hack", false, 1, function(on)
-    Cheat.Speed = on
-    print("[Cheat] Speed:", on)
-    local char = LocalPlayer.Character
-    local hum = char and char:FindFirstChildOfClass("Humanoid")
-    if hum then hum.WalkSpeed = on and 50 or 16 end
-end)
-
-makeToggle(movePage, "Jump Power", false, 2, function(on)
-    Cheat.JumpPower = on
-    print("[Cheat] Jump Power:", on)
-    local char = LocalPlayer.Character
-    local hum = char and char:FindFirstChildOfClass("Humanoid")
-    if hum then
-        hum.UseJumpPower = true
-        hum.JumpPower = on and 100 or 50
-    end
-end)
-
-makeToggle(movePage, "Fly", false, 3, function(on)
-    Cheat.Fly = on
-    print("[Cheat] Fly:", on)
-end)
-
-makeToggle(movePage, "Noclip", false, 4, function(on)
-    Cheat.Noclip = on
-    print("[Cheat] Noclip:", on)
-    if on then
-        task.spawn(function()
-            while Cheat.Noclip do
-                local char = LocalPlayer.Character
-                if char then
-                    for _, p in ipairs(char:GetDescendants()) do
-                        if p:IsA("BasePart") and p.CanCollide then p.CanCollide = false end
-                    end
-                end
-                task.wait(0.1)
-            end
-        end)
-    end
-end)
-
--- MISC
-pageButton("Misc", "Misc", 4)
-local miscPage = newPage("Misc")
-
-makeToggle(miscPage, "Anti-AFK", false, 1, function(on)
-    Cheat.AntiAFK = on
-    print("[Cheat] Anti-AFK:", on)
-    if on then
-        task.spawn(function()
-            while Cheat.AntiAFK do
-                local vu = game:GetService("VirtualUser")
-                vu:CaptureController()
-                vu:ClickButton2(Vector2.new())
-                task.wait(60)
-            end
-        end)
-    end
-end)
-
-makeToggle(miscPage, "Infinite Jump", false, 2, function(on)
-    Cheat.InfiniteJump = on
-    print("[Cheat] Infinite Jump:", on)
-end)
-
-makeToggle(miscPage, "Auto Collect", false, 3, function(on)
-    Cheat.AutoCollect = on
-    print("[Cheat] Auto Collect:", on)
-    if on then
-        task.spawn(function()
-            while Cheat.AutoCollect do
-                local char = LocalPlayer.Character
-                local root = char and char:FindFirstChild("HumanoidRootPart")
-                if root then
-                    for _, obj in ipairs(workspace:GetDescendants()) do
-                        if obj:IsA("BasePart") and obj.Name:lower():find("coin") then
-                            pcall(function() obj.CFrame = root.CFrame end)
-                        end
-                    end
-                end
-                task.wait(0.5)
-            end
-        end)
-    end
-end)
-
-selectPage("Combat", true)
-print("[Cheat] Menu loaded.")
+-- ==================== API ====================
+return {
+    ScreenGui      = ScreenGui,
+    newPage        = newPage,
+    pageButton     = pageButton,
+    selectPage     = selectPage,
+    makeToggle     = makeToggle,
+    makeColorPicker= makeColorPicker,
+    setTheme       = function(name) setTheme(name); applyAllTheme() end,
+    toggleUI       = toggleUI,
+    show           = showUI,
+    hide           = hideUI,
+    setCollapsed   = setCollapsed,
+    Theme          = Theme,
 }
